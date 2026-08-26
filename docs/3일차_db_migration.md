@@ -74,12 +74,6 @@ mysql> USE ai_health; SHOW TABLES;
 
 ## 4. DB Viewer로 스키마 확인한 화면
 
-> 아래에 실제 개발 환경(`docker-compose up -d mysql` 로 띄운 MySQL)에 대해 `alembic upgrade head`를 실행한 뒤, DB Viewer(DBeaver / TablePlus / MySQL Workbench / VS Code MySQL 확장 등)로 5개 테이블(`users`, `patients`, `medical_records`, `xray_images`, `ai_analysis_results`)이 생성된 모습을 캡처해서 삽입하세요.
->
-> ```markdown
-> ![DB 스키마 적용 결과](./images/3일차_db_schema.png)
-> ```
->
-> 캡처 방법 안내는 이 문서를 전달한 채팅에서 함께 안내해드렸습니다.
+로컬에 MySQL 8.0을 설치하고 `.env`를 연결한 뒤 `uv run alembic upgrade head`를 실행했고, MySQL Workbench로 접속해 `ai_health` 스키마 아래 5개 테이블(+ `alembic_version`)이 정상적으로 생성된 것을 확인했습니다.
 
-<!-- ![DB 스키마 적용 결과](./images/3일차_db_schema.png) -->
+![DB 스키마 적용 결과](./images/3일차_db_schema.png)
