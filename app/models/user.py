@@ -1,4 +1,5 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
+from typing import List, Optional
 
 from sqlalchemy import Boolean, DateTime, String, text
 from sqlalchemy import Enum as SAEnum
@@ -43,18 +44,18 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
-        default=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
         server_default=text("current_timestamp(0)"),
         comment="유저 생성 일시",
     )
-    updated_at: Mapped[datetime | None] = mapped_column(
+    updated_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         nullable=True,
-        onupdate=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(timezone.utc),
         comment="유저 정보 수정 일시",
     )
 
     # 이 유저가 업로드한 X-Ray 이미지들
-    uploaded_xray_images: Mapped[list["XrayImage"]] = relationship(
+    uploaded_xray_images: Mapped[List["XrayImage"]] = relationship(
         back_populates="uploader"
     )

@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
 from starlette.responses import FileResponse
 from app.apis.practice_apis import router as practice_router
+from app.apis.user_apis import router as user_router
 
 app = FastAPI()
 
@@ -23,6 +24,7 @@ app.mount("/media", StaticFiles(directory=BASE_DIR / "media"), name="media")
 
 # practice API 라우터 등록
 app.include_router(practice_router)
+app.include_router(user_router)
 
 
 @app.get(path="/healthcheck", status_code=200, include_in_schema=False)

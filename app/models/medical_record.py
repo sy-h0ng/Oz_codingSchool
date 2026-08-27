@@ -1,4 +1,5 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
+from typing import List, Optional
 
 from sqlalchemy import BigInteger, DateTime, ForeignKey, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -22,24 +23,24 @@ class MedicalRecord(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
-        default=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
         server_default=text("current_timestamp(0)"),
         comment="진료 기록 등록 일시",
     )
-    updated_at: Mapped[datetime | None] = mapped_column(
+    updated_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         nullable=True,
-        onupdate=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(timezone.utc),
         comment="진료 기록 수정 일시",
     )
 
     # 이 진료 기록이 속한 환자
     patient: Mapped["Patient"] = relationship(back_populates="medical_records")
     # 이 진료 기록에 업로드된 X-Ray 이미지들
-    xray_images: Mapped[list["XrayImage"]] = relationship(
+    xray_images: Mapped[List["XrayImage"]] = relationship(
         back_populates="medical_record", cascade="all, delete-orphan"
     )
     # 이 진료 기록에 대한 AI 분석 결과들
-    ai_analysis_results: Mapped[list["AIAnalysisResult"]] = relationship(
+    ai_analysis_results: Mapped[List["AIAnalysisResult"]] = relationship(
         back_populates="medical_record", cascade="all, delete-orphan"
     )

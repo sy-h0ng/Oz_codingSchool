@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Path
 from pydantic import BaseModel
@@ -53,9 +54,9 @@ class UserRegisterRequest(BaseModel):
 
 
 class UserUpdateRequest(BaseModel):
-    age: int | None = None
-    email: str | None = None
-    password: str | None = None
+    age: Optional[int] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
 
 
 @router.get(

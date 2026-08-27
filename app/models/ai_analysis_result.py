@@ -1,5 +1,6 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal
+from typing import Optional
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Numeric, String, text
 from sqlalchemy import BigInteger as SABigInteger
@@ -32,14 +33,14 @@ class AIAnalysisResult(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
-        default=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
         server_default=text("current_timestamp(0)"),
         comment="분석 결과 생성 일시",
     )
-    updated_at: Mapped[datetime | None] = mapped_column(
+    updated_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         nullable=True,
-        onupdate=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(timezone.utc),
         comment="분석 결과 수정 일시",
     )
 

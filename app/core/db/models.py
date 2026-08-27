@@ -1,5 +1,6 @@
 import uuid as uuid_pkg
-from datetime import UTC, datetime
+from datetime import datetime, timezone
+from typing import Optional
 
 from sqlalchemy import Boolean, DateTime, text
 from sqlalchemy.dialects.mysql import CHAR
@@ -15,13 +16,13 @@ class UUIDMixin:
 
 class TimestampMixin:
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.now(UTC), server_default=text("current_timestamp(0)")
+        DateTime, default=lambda: datetime.now(timezone.utc), server_default=text("current_timestamp(0)")
     )
-    updated_at: Mapped[datetime | None] = mapped_column(
-        DateTime, nullable=True, onupdate=datetime.now(UTC), server_default=text("current_timestamp(0)")
+    updated_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, nullable=True, onupdate=lambda: datetime.now(timezone.utc), server_default=text("current_timestamp(0)")
     )
 
 
 class SoftDeleteMixin:
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
