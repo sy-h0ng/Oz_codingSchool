@@ -21,3 +21,6 @@ envs/
 .env
 
 .python-version
+
+# 개인 포트폴리오용 — 절대 원격에 올리지 않음
+docs/팀_회고_중복작업_문제.md
