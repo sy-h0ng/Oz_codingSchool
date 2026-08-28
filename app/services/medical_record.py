@@ -13,12 +13,10 @@ from app.models.user import User
 from app.repositories.medical_record import (
     create_medical_record as repo_create_medical_record,
     create_xray_image,
-    delete_medical_record as repo_delete_medical_record,
     get_medical_record_by_chart_number,
     get_medical_record_by_id,
     get_patient_by_id,
     list_medical_records_by_patient as repo_list_medical_records_by_patient,
-    update_medical_record as repo_update_medical_record,
 )
 from app.schemas.medical_record import MedicalRecordListItem, MedicalRecordResponse
 
@@ -126,61 +124,3 @@ async def get_medical_record(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="진료기록을 찾을 수 없습니다.")
     return to_medical_record_response(record)
 
-
-async def update_medical_record(
-    db: AsyncSession,
-    current_user: User,
-    record_id: int,
-    chart_number: str | None,
-    symptoms: str | None,
-    xray_image: UploadFile | None,
-) -> MedicalRecordResponse:
-    require_medical_record_access(current_user)
-
-    if chart_number is None and symptoms is None and xray_image is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="수정할 항목을 최소 하나 이상 입력해야 합니다."
-        )
-
-    record = await get_medical_record_by_id(db, record_id)
-    if record is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="진료기록을 찾을 수 없습니다.")
-
-    updates: dict[str, str] = {}
-    if chart_number is not None and chart_number != record.chart_number:
-        existing = await get_medical_record_by_chart_number(db, chart_number)
-        if existing is not None:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT, detail="이미 사용 중인 차트 번호입니다."
-            )
-        updates["chart_number"] = chart_number
-    if symptoms is not None:
-        updates["symptoms"] = symptoms
-
-    if updates:
-        record = await repo_update_medical_record(db, record, **updates)
-
-    if xray_image is not None:
-        image_url = await _save_xray_image(xray_image)
-        await create_xray_image(
-            db,
-            record_id=record.id,
-            uploader_id=current_user.id,
-            image_url=image_url,
-            shooting_datetime=datetime.now(UTC),
-        )
-
-    record = await get_medical_record_by_id(db, record.id)
-    return to_medical_record_response(record)
-
-
-async def delete_medical_record(db: AsyncSession, current_user: User, record_id: int) -> None:
-    require_medical_record_access(current_user)
-    record = await get_medical_record_by_id(db, record_id)
-    if record is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="진료기록을 찾을 수 없습니다.")
-
-    image_paths = [BASE_DIR / image.image_url.removeprefix("/") for image in record.xray_images]
-    await repo_delete_medical_record(db, record)
-    for image_path in image_paths:
-        image_path.unlink(missing_ok=True)

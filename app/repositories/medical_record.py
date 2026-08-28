@@ -58,19 +58,6 @@ async def list_medical_records_by_patient(
     return list(result.scalars().all())
 
 
-async def update_medical_record(db: AsyncSession, record: MedicalRecord, **fields) -> MedicalRecord:
-    for key, value in fields.items():
-        setattr(record, key, value)
-    await db.commit()
-    await db.refresh(record)
-    return record
-
-
-async def delete_medical_record(db: AsyncSession, record: MedicalRecord) -> None:
-    await db.delete(record)
-    await db.commit()
-
-
 async def create_xray_image(db: AsyncSession, **kwargs) -> XrayImage:
     xray_image = XrayImage(**kwargs)
     db.add(xray_image)

@@ -11,10 +11,8 @@ from app.models.user import User
 from app.schemas.medical_record import MedicalRecordListItem, MedicalRecordResponse
 from app.services.medical_record import (
     create_medical_record,
-    delete_medical_record,
     get_medical_record,
     list_medical_records,
-    update_medical_record,
 )
 
 router = APIRouter(prefix="/api/v1", tags=["medical-records"])
@@ -69,39 +67,3 @@ async def get_medical_record_api(
 ):
     """진료기록 1건의 상세 정보(증상 전문, 최신 X-Ray 이미지 URL 포함)를 조회한다."""
     return await get_medical_record(db, current_user, record_id)
-
-
-@router.patch(
-    "/medical-records/{record_id}",
-    response_model=MedicalRecordResponse,
-    summary="진료기록 수정 (설계 문서 추가 항목)",
-)
-async def update_medical_record_api(
-    record_id: int,
-    chart_number: Annotated[str | None, Form(min_length=1, max_length=50)] = None,
-    symptoms: Annotated[str | None, Form(min_length=1)] = None,
-    xray_image: Annotated[UploadFile | None, File()] = None,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(async_get_db),
-):
-    """`chart_number`, `symptoms`, `xray_image` 중 최소 하나를 부분 수정한다.
-    새 X-Ray 이미지를 올리면 기존 이미지는 삭제하지 않고 새 이력으로 추가되며,
-    응답의 `xray_image_url`은 항상 가장 최근 이미지를 가리킨다."""
-    return await update_medical_record(
-        db, current_user, record_id, chart_number, symptoms, xray_image
-    )
-
-
-@router.delete(
-    "/medical-records/{record_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="진료기록 삭제 (설계 문서 추가 항목)",
-)
-async def delete_medical_record_api(
-    record_id: int,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(async_get_db),
-):
-    """진료기록과 연결된 X-Ray 이미지(DB row + 로컬 파일), AI 분석 결과를 함께
-    영구 삭제한다."""
-    await delete_medical_record(db, current_user, record_id)
