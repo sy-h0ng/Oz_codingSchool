@@ -23,8 +23,8 @@ class AIAnalysisResult(Base):
     confidence: Mapped[Decimal] = mapped_column(
         Numeric(5, 2), nullable=False, comment="예측 신뢰도(확률, %)"
     )
-    heatmap_url: Mapped[str] = mapped_column(
-        String(255), nullable=False, comment="AI가 근거로 삼은 부위를 표시한 히트맵 이미지 URL"
+    heatmap_url: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, comment="AI가 근거로 삼은 부위를 표시한 히트맵 이미지 URL"
     )
     ai_model: Mapped[str] = mapped_column(
         String(50), nullable=False, comment="분석에 사용된 AI 모델명/버전"
