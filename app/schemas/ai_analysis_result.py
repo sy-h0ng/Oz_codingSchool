@@ -15,3 +15,10 @@ class AIAnalysisResultResponse(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PneumoniaPredictionResponse(BaseModel):
+    is_pneumonia: bool
+    confidence: float
+    heatmap_url: str | None = None
+    ai_model: str
