@@ -101,8 +101,7 @@ SimpleCNN(
 worker/
   model.py          # SimpleCNN 정의, get_model()(lazy singleton 로딩), predict(image_bytes)
   models/
-    model.pth              # 모델 구조+가중치 (사용)
-    model_state_dict.pth   # 가중치만 (참고용, 현재 미사용)
+    model.pth              # 모델 구조+가중치 (팀 결정에 따라 이 파일 사용)
 
 app/
   models/ai_analysis_result.py    # 기존 (main에 이미 존재)
