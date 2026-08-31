@@ -4,6 +4,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
 from starlette.responses import FileResponse
+from app.apis.ai_analysis import router as ai_analysis_router
 from app.apis.medical_record import router as medical_record_router
 from app.apis.patient import router as patient_router
 from app.apis.practice_apis import router as practice_router
@@ -29,6 +30,7 @@ app.include_router(user_router)
 app.include_router(admin_router)
 app.include_router(patient_router)
 app.include_router(medical_record_router)
+app.include_router(ai_analysis_router)
 
 @app.get(path="/healthcheck", status_code=200, include_in_schema=False)
 async def healthcheck():
