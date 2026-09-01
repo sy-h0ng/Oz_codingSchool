@@ -70,6 +70,7 @@ class AdminUserListItem(BaseModel):
     department: DepartmentEnum
     gender: GenderEnum
     phone_number: str
+    role: RoleEnum
     is_active: bool
 
     class Config:
