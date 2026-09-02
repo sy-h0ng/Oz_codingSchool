@@ -1,0 +1,32 @@
+# env 파일
+.env
+.env.*
+!.env.example
+
+# 파이썬 캐시
+__pycache__/
+*.pyc
+*.pyo
+
+# 라이브러리/타입체크 캐시
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# 도커 관련 설정 파일
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# 문서화
+docs/
+
+# README
+README.md
+
+# IDE 설정
+.vscode/
+.idea/
+
+# 가상환경
+.venv/
