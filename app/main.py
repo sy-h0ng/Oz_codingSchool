@@ -9,6 +9,8 @@ from app.apis.user import router as user_router, admin_router
 from app.apis.patient import router as patient_router
 from app.apis.medical_record import router as medical_record_router
 from app.apis.prediction import router as prediction_router
+from app.core.redis_client import close_redis
+
 app = FastAPI()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,6 +33,11 @@ app.include_router(admin_router)
 app.include_router(patient_router)
 app.include_router(medical_record_router)
 app.include_router(prediction_router)
+
+
+@app.on_event("shutdown")
+async def shutdown_redis_connection() -> None:
+    await close_redis()
 
 @app.get(path="/healthcheck", status_code=200, include_in_schema=False)
 async def healthcheck():

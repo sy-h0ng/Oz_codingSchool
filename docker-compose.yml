@@ -1,42 +1,102 @@
 services:
   fastapi:
+    # 프로젝트 최상단을 build context로 사용하고 app/Dockerfile로 이미지를 만든다.
     build:
       context: .
       dockerfile: app/Dockerfile
-    entrypoint: sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    working_dir: /app
+    env_file:
+      - .env
+    environment:
+      # FastAPI 컨테이너에서 localhost는 자기 자신이다. MySQL 서비스 이름으로 접속해야 한다.
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    command:
+      - uv
+      - run
+      - --no-sync
+      - uvicorn
+      - app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --reload
+      # bind mount의 로컬 .venv 변경은 앱 코드 변경이 아니므로 재시작 대상에서 제외한다.
+      - --reload-exclude
+      - ".venv/*"
     ports:
       - "8000:8000"
     volumes:
-      - ./app:/app
-      - static_volume:/app/static
-      - media_volume:/app/media
+      # 내 컴퓨터의 프로젝트 전체를 컨테이너 /app에 연결한다.
+      # 파일을 저장하면 --reload가 감지해 FastAPI를 다시 실행한다.
+      - ./:/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/healthcheck || exit 1"]
-      interval: 5s
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthcheck"]
+      interval: 10s
       timeout: 5s
       retries: 3
-    depends_on:
-      - mysql
 
   mysql:
     image: mysql:8.0
-    volumes:
-      - mysql_volume:/var/lib/mysql
+    env_file:
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_PORT: ${DB_PORT}
     ports:
-      - "${DB_PORT}:3306"
+      # 내 맥의 3306은 이미 로컬 MySQL이 사용 중이므로 Docker MySQL은 3307로 연다.
+      # 컨테이너끼리는 여전히 mysql:3306으로 통신한다.
+      - "3307:3306"
+    volumes:
+      # 컨테이너를 내려도 MySQL 데이터는 유지한다.
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 5
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
+  redis:
+    # Redis 7의 가벼운 Alpine 이미지를 사용한다.
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      # 컨테이너를 다시 만들어도 Redis 데이터를 유지한다.
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  ai-worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    working_dir: /app
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    volumes:
+      # worker도 업로드 X-Ray와 model.pth를 읽어야 한다.
+      - ./:/app
+    depends_on:
+      redis:
+        condition: service_healthy
 
 volumes:
-  mysql_volume:
-  static_volume:
-  media_volume:
+  mysql_data:
+  redis_data:

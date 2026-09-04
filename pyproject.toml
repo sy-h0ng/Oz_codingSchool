@@ -10,11 +10,28 @@ dependencies = [
     "asyncmy>=0.2.11",
     "cryptography>=46.0.6",
     "fastapi[standard]>=0.135.3",
-    "pillow>=12.3.0",
     "pydantic-settings>=2.13.1",
     "pyjwt>=2.13.0",
+    "redis>=5.2.1",
     "sqlalchemy[asyncio]>=2.0.49",
-    "torch>=2.13.0",
-    "torchvision>=0.28.0",
     "uuid6>=2025.0.1",
 ]
+
+# FastAPI 이미지는 위의 웹/DB 의존성만 설치한다.
+# 무거운 AI 라이브러리는 ai-worker 이미지에서만 extra로 설치한다.
+[project.optional-dependencies]
+ai = [
+    "pillow>=12.3.0",
+    "torch>=2.13.0",
+    "torchvision>=0.28.0",
+]
+
+# Docker와 NVIDIA GPU가 없는 개발 환경에서는 PyTorch의 CPU 전용 배포본을 사용한다.
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
