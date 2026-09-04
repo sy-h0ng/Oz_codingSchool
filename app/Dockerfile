@@ -19,9 +19,10 @@ RUN uv sync --frozen --no-install-project
 # 설치된 가상환경의 실행파일(uvicorn 등)을 PATH에 등록
 ENV PATH="/.venv/bin:$PATH"
 
-# 실제 애플리케이션 코드는 마지막에 복사 (worker는 app.services.prediction이 직접 import함)
+# 실제 애플리케이션 코드는 마지막에 복사
+# (AI 추론은 Redis 큐를 통해 별도 ai-worker 컨테이너가 담당하므로, torch 등
+# 무거운 의존성이 필요한 worker/ 는 이 이미지에 포함하지 않는다)
 COPY app ./app
-COPY worker ./worker
 
 EXPOSE 8000
 
