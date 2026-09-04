@@ -1,0 +1,8 @@
+# 파이썬 캐시
+__pycache__/
+*.pyc
+*.pyo
+
+# 도커 관련 설정 파일
+Dockerfile
+.dockerignore

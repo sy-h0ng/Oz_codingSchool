@@ -8,7 +8,6 @@ services:
       - "8000:8000"
     volumes:
       - ./app:/app
-      - ./worker:/worker
       - ./static:/static
       - ./media:/media
     environment:
@@ -17,6 +16,8 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/healthcheck || exit 1"]
       interval: 5s
@@ -24,6 +25,7 @@ services:
       retries: 3
     depends_on:
       - mysql
+      - redis
 
   mysql:
     image: mysql:8.0
@@ -41,6 +43,32 @@ services:
       timeout: 20s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_volume:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ai-worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    volumes:
+      - ./worker:/worker
+      - ./media:/media
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    depends_on:
+      - redis
+
 
 volumes:
   mysql_volume:
+  redis_volume:

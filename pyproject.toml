@@ -10,11 +10,18 @@ dependencies = [
     "asyncmy>=0.2.11",
     "cryptography>=46.0.6",
     "fastapi[standard]>=0.135.3",
-    "numpy>=2.5.2",
-    "pillow>=12.3.0",
     "pydantic-settings>=2.13.1",
     "pyjwt>=2.13.0",
+    "redis>=5.2.1",
     "sqlalchemy[asyncio]>=2.0.49",
-    "torch>=2.13.0",
     "uuid6>=2025.0.1",
+]
+
+# AI 추론(torch 등)에만 필요한 무거운 의존성. fastapi 앱 이미지에는 설치하지 않고
+# ai-worker 이미지에서만 `uv sync --extra ai`로 설치해서 이미지 용량을 줄인다.
+[project.optional-dependencies]
+ai = [
+    "numpy>=2.5.2",
+    "pillow>=12.3.0",
+    "torch>=2.13.0",
 ]

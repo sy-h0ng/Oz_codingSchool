@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     DB_PORT: str = "3306"
     DB_NAME: str = "ai_health"
 
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+
     SECRET_KEY: str = "dev-only-change-me-in-production"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
